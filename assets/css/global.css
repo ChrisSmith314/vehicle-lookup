@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Global Styles */
+/* beautify ignore:start */
+.container_wrap {
+    @apply w-full px-[30px] max-md:px-[15px]
+}
+
+.container {
+    @apply w-full max-w-[1620px] mx-auto
+}
+
+/* beautify ignore:end */
