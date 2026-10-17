@@ -8,10 +8,10 @@ class vehicle_lookup_database {
     
     public function __construct() {
         if(!self::$instance){
-            $host = env('database_host') ?? '127.0.0.1'; 
-            $user = env('database_user');
-            $database = env('database_name');
-            $password = env('database_password');
+            $host     = $_ENV['DB_HOST'] ?? '127.0.0.1'; 
+            $user     = $_ENV['DB_USER'] ?? '';
+            $database = $_ENV['DB_NAME'] ?? '';
+            $password = $_ENV['DB_PASS'] ?? '';
             
             $connection = new mysqli($host, $user, $password, $database);
             
@@ -25,7 +25,7 @@ class vehicle_lookup_database {
         }
     }
     
-    public function getConnection(){
+    public static function getConnection(){
         return self::$instance;
     }
     
