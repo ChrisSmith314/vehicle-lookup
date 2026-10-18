@@ -17,15 +17,9 @@ foreach(glob('includes/*.php') as $class){
     include $class;
 }
 
+$api_route = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+
 vehicle_lookup_rest_api::init();
 vehicle_lookup_rest_api::validate_api();
 
 vehicle_lookup_endpoint_registration::call_endpoint();
-
-die();
-
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$method = $_SERVER['REQUEST_METHOD'];
-var_dump($requestUri);
-var_dump($method);
-var_dump((new vehicle_lookup_database())::getConnection());
