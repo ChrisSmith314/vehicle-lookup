@@ -115,7 +115,7 @@ class vehicle_lookup_rest_api {
         (vrm, make, model, colour, session_start, session_end, session_agreed_end, session_type, session_status, location_code) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $query_params = [
-            'vrm' => $_POST['vrm'],
+            'vrm' => strtoupper($_POST['vrm']),
             'make'=> $_POST['make'],
             'model'=> $_POST['model'],
             'colour' => $_POST['colour'],
@@ -179,7 +179,7 @@ class vehicle_lookup_rest_api {
             $this->reject_request("Missing fields: [{$missing_fields}]", 400);
         }
         
-        if(is_nan($_POST['id'])){
+        if(!is_numeric($_POST['id'])){
             $this->reject_request("ID value is non numeric", 400);
         }
         
@@ -251,7 +251,7 @@ class vehicle_lookup_rest_api {
             $this->reject_request("Missing fields: [{$missing_fields}]", 400);
         }
         
-        if(is_nan($_GET['id'])){
+        if(!is_numeric($_GET['id'])){
             $this->reject_request("ID value is non numeric", 400);
         }
         
@@ -259,7 +259,7 @@ class vehicle_lookup_rest_api {
         $sql_query = "SELECT id, vrm, make, model, colour, session_start, session_end, session_agreed_end, session_type, session_status, location_code FROM vehicle_sessions WHERE id = ?";
         $response = self::$database->query($sql_query, [$_GET['id']], true);
         
-        if($response){
+        if(is_array($response)){
             http_response_code(200);
             echo json_encode([
                 'status' => 'success',
@@ -276,7 +276,119 @@ class vehicle_lookup_rest_api {
     
     // Session Lookup Endpoint
     public function session_lookup(){
-        echo "looking up a session";
+        $method = $_SERVER['REQUEST_METHOD'];
+        if($method !== 'GET'){
+            $this->reject_request('Incorrect method used.', '405');
+        }
+        
+         // Ensure all required fields are present
+        $required_fields = [
+        ];
+        
+        foreach($required_fields as $key => $field_key){
+            // Remove present fields to leave a list of missing values
+            if(isset($_GET[$field_key]) && $_GET[$field_key]){
+                unset($required_fields[$key]);
+            }
+        }
+        
+        if($required_fields){
+            $missing_fields = implode(", ", $required_fields);
+            $this->reject_request("Missing fields: [{$missing_fields}]", 400);
+        }
+        
+        // Search Query
+        $sql_query = "SELECT id, vrm, make, model, colour, session_start, session_end, session_agreed_end, session_type, session_status, location_code FROM vehicle_sessions WHERE 1=1";
+        $sql_params = [];
+        
+        /** VRM Search */
+        if (!empty($_GET['vrm'])) {
+            $is_fuzzy = !empty($_GET['fuzzy']) && $_GET['fuzzy'] === 'true';
+            
+            $user_query = strtoupper(str_replace(' ', '', trim($_GET['vrm'])));
+            
+            
+            // Fuzzy Search implementation
+            // Triagram Search
+            if($is_fuzzy){
+                $fuzzy_segments = [];
+                $fuzzy_sql = [];
+                for ($i = 0; $i <= strlen($user_query) - 3; $i++) {
+                    $segment = substr($user_query, $i, 3);
+                    
+                    $fuzzy_sql[] = "(CASE WHEN vrm LIKE ? THEN 1 ELSE 0 END)";
+                    $sql_params[] = '%' . $segment . '%';
+                    
+                }
+                
+                $fuzzy_query = implode(' + ', $fuzzy_sql);
+                
+                // Return results based on percentage comparison - less characters = greater threshold
+                if (strlen($user_query) <= 5) {
+                    $required_percent = 0.33; 
+                } else {
+                    $required_percent = 0.65; 
+                }
+                $matched_percentage = ceil(count($fuzzy_sql) * $required_percent);
+                
+                $sql_query .= " AND ({$fuzzy_query}) >= ?";
+                $sql_params[] = $matched_percentage;
+            } else {
+                $sql_query .= " AND vrm = ?";
+                $sql_params[] = $user_query;
+            }
+        }
+        
+        /** Make Search - Excluded from MVP */        
+        /** Model Search - Excluded from MVP */
+        
+        /** Session Start */
+        if (!empty($_GET['period_to'])) {
+            $start_time = strtotime($_GET['period_to']);
+            
+            if($start_time){
+                $sql_query .= " AND session_start <= ?";
+                $sql_params[] = $start_time;
+            }
+        }
+        
+        /** Session End */
+        if (!empty($_GET['period_from'])) {
+            $end_time = strtotime($_GET['period_from']);
+            $end_column = !empty($_GET['use_actual_end']);
+            
+            if($end_time){
+                if($end_column){
+                    // If end time below current time, show session with session_end set to null
+                    if($end_time <= time()){
+                        $sql_query .= " AND (session_end >= ? OR (session_end IS NULL))";
+                    } else {
+                        $sql_query .= " AND session_end >= ?";
+                    }
+                } else {
+                        $sql_query .= " AND session_agreed_end >= ?";
+                }
+                $sql_params[] = $end_time;
+            }
+        }
+
+        
+        /** Final Search */
+         $response = self::$database->query($sql_query, $sql_params);
+        
+        if(is_array($response)){
+            http_response_code(200);
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Vehicle session fetched successfully.',
+                'data' => $response
+            ]);
+            exit;
+        } else{
+            http_response_code(500);
+            echo json_encode(['status' => 'error', 'message' => 'Failed to fetch data.']);
+            exit;
+        }
     }
     
     /**
