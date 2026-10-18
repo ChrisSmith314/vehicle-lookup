@@ -20,7 +20,6 @@ class vehicle_lookup_endpoint_registration {
     public static function call_endpoint(){
         
         $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $method = $_SERVER['REQUEST_METHOD'];
         
         $endpoint = trim(str_replace("/" . self::$prefix . "/", '', $request_uri),"/");
         
