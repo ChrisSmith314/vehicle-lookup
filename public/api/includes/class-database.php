@@ -4,10 +4,14 @@ use function Env\env;
 
 class vehicle_lookup_database {
     
-    private static $instance;
+    private static $connection;
     
     public function __construct() {
-        if(!self::$instance){
+       
+    }
+    
+    public static function getConnection(){
+        if(!self::$connection){
             $host     = $_ENV['DB_HOST'] ?? '127.0.0.1'; 
             $user     = $_ENV['DB_USER'] ?? '';
             $database = $_ENV['DB_NAME'] ?? '';
@@ -16,21 +20,32 @@ class vehicle_lookup_database {
             $connection = new mysqli($host, $user, $password, $database);
             
             if($connection->connect_error){
-                throw new Exception('Unable to connect to database.');
+                throw new RuntimeException('Unable to connect to database.');
             }
             
-            self::$instance = $connection;
+            self::$connection = $connection;
             
            self::createTables();
         }
+        return self::$connection;
     }
     
-    public static function getConnection(){
-        return self::$instance;
-    }
-    
-    public function query($query){
-        return self::getConnection()->query($query);
+    public function query($statement, $params = []){
+        
+        // Fetch Query with Params
+        if($params){
+            $command = self::getConnection()->prepare($statement);
+            $command->execute($params);
+            $result = $command->get_result();
+            $data = $result->fetch_all(MYSQLI_ASSOC);
+            $command->close();
+            
+            return $data;
+        }
+        
+        // Fetch Standard Query
+        $result = self::getConnection()->query($statement);
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
     
     private static function createTables(){
@@ -58,6 +73,17 @@ class vehicle_lookup_database {
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
        
+        
+        self::getConnection()->query($sql);
+        
+        // API Key Registration
+        $sql = "CREATE TABLE IF NOT EXISTS api_keys (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        client_name VARCHAR(150) NOT NULL,
+        api_key VARCHAR(64) NOT NULL UNIQUE,
+        api_secret VARCHAR(64) NOT NULL,
+        allowed_ip VARCHAR(45) DEFAULT NULL -- Not Implemented but recommended for vehicle_lookup system
+        )";
         
         self::getConnection()->query($sql);
     }
