@@ -34,9 +34,6 @@ class vehicle_lookup_rest_api {
     
     // Validate API session
     public static function validate_api(){
-        //Temp Disable 
-//        return true;
-        
         // Validate API key against recorded user
         $headers = getallheaders();
         $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
@@ -232,7 +229,49 @@ class vehicle_lookup_rest_api {
     
     // Get Session Endpoint
     public function get_session(){
-        echo "Getting a session";
+        $method = $_SERVER['REQUEST_METHOD'];
+        if($method !== 'GET'){
+            $this->reject_request('Incorrect method used.', '405');
+        }
+        
+         // Ensure all required fields are present
+        $required_fields = [
+            'id'
+        ];
+        
+        foreach($required_fields as $key => $field_key){
+            // Remove present fields to leave a list of missing values
+            if(isset($_GET[$field_key]) && $_GET[$field_key]){
+                unset($required_fields[$key]);
+            }
+        }
+        
+        if($required_fields){
+            $missing_fields = implode(", ", $required_fields);
+            $this->reject_request("Missing fields: [{$missing_fields}]", 400);
+        }
+        
+        if(is_nan($_GET['id'])){
+            $this->reject_request("ID value is non numeric", 400);
+        }
+        
+        //Fetch current query
+        $sql_query = "SELECT id, vrm, make, model, colour, session_start, session_end, session_agreed_end, session_type, session_status, location_code FROM vehicle_sessions WHERE id = ?";
+        $response = self::$database->query($sql_query, [$_GET['id']], true);
+        
+        if($response){
+            http_response_code(200);
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Vehicle session fetched successfully.',
+                'data' => $response
+            ]);
+            exit;
+        } else{
+            http_response_code(500);
+            echo json_encode(['status' => 'error', 'message' => 'Failed to fetch data.']);
+            exit;
+        }
     }
     
     // Session Lookup Endpoint
