@@ -4,14 +4,19 @@ class vehicle_lookup_endpoint_registration {
     private static $instance;
     private $endpoints = [];
     
-    private static $prefix = 'public/api';
+    private static $prefix = '/api';
+    
+    public function __construct(){
+        global $api_route;
+        self::$prefix = $api_route;
+    }
     
     public static function getInstance(){
         if (self::$instance === null) {
             self::$instance = new self();
         }
         return self::$instance;
-      }
+    }
     
     public function register_endpoint($endpoint, $function){
         $this->endpoints[$endpoint] = $function;
@@ -21,7 +26,7 @@ class vehicle_lookup_endpoint_registration {
         
         $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         
-        $endpoint = trim(str_replace("/" . self::$prefix . "/", '', $request_uri),"/");
+        $endpoint = trim(str_replace(self::$prefix . "/", '', $request_uri),"/");
         
         if(isset(self::getInstance()->endpoints[$endpoint])){
             call_user_func(self::getInstance()->endpoints[$endpoint]);

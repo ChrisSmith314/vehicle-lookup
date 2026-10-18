@@ -76,9 +76,85 @@ class vehicle_lookup_rest_api {
         exit;
     }
     
+    private function reject_request($error_message, $code = '404'){
+        http_response_code($code);
+        echo json_encode(['status' => 'error', 'message' => $error_message]);
+        exit;
+    }
+    
     // Register Session Endpoint
     public function register_session(){
-        echo "Registering a session";
+        $method = $_SERVER['REQUEST_METHOD'];
+        if($method !== 'POST'){
+            $this->reject_request('Incorrect method used.', '405');
+        }
+        
+        // Ensure all required fields are present
+        $required_fields = [
+            'vrm',
+            'make',
+            'model',
+            'colour',
+            'session_start',
+            'session_agreed_end',
+            'session_type',
+            'location_code'
+        ];
+        
+        foreach($required_fields as $key => $field_key){
+            // Remove present fields to leave a list of missing values
+            if(isset($_POST[$field_key]) && $_POST[$field_key]){
+                unset($required_fields[$key]);
+            }
+        }
+        
+        if($required_fields){
+            $missing_fields = implode(", ", $required_fields);
+            $this->reject_request("Missing fields: [{$missing_fields}]", 400);
+        }
+        
+        // Prepare data and insert into database
+        $query = "INSERT INTO vehicle_sessions 
+        (vrm, make, model, colour, session_start, session_end, session_agreed_end, session_type, session_status, location_code) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $query_params = [
+            'vrm' => $_POST['vrm'],
+            'make'=> $_POST['make'],
+            'model'=> $_POST['model'],
+            'colour' => $_POST['colour'],
+            'session_start'=> strtotime($_POST['session_start']),
+            'session_end'=> isset($_POST['session_end']) ? strtotime($_POST['session_end']) : null,
+            'session_agreed_end'=> strtotime($_POST['session_agreed_end']),
+            'session_type'=> $_POST['session_type'],
+            'session_status' => $this->get_session_status($_POST),
+            'location_code'=> $_POST['location_code'],
+//            'created_at' => time()
+        ];
+        
+        $query_params = $this->validate_data($query_params);
+        
+        $sql_params = array_values($query_params);
+        
+        // Submit to Database
+        $response = self::$database->query($query, $sql_params);
+        
+        if($response){
+            http_response_code(201);
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Vehicle session registered successfully.',
+                'data' => array_merge([
+                    'id' => $response,
+                    ], 
+                    $query_params
+                    )
+            ]);
+            exit;
+        } else{
+            http_response_code(500);
+            echo json_encode(['status' => 'error', 'message' => 'Failed to save session to database.']);
+            exit;
+        }
     }
     
     // End Session Endpoint
@@ -94,5 +170,39 @@ class vehicle_lookup_rest_api {
     // Session Lookup Endpoint
     public function session_lookup(){
         echo "looking up a session";
+    }
+    
+    /**
+    * Additional Functions
+    */
+    // Get session status
+    private function get_session_status($session){
+        $current_time = time();
+        $session_agreed_end = strtotime($session['session_agreed_end']);
+       
+        //Current session completed
+        if(!empty($session['session_end'])){
+            return 'completed';
+        }
+        
+        // Current session is overstaying
+        if($session_agreed_end && $current_time > $session_agreed_end){
+            return 'overstay';
+        }
+        
+        // Current session is on going
+        return 'active';
+    }
+    
+    // Validate API data
+    private function validate_data($data){
+        $allow_null = ['session_end'];
+        foreach($data as $key => $data_item){
+            if(!$data_item && !in_array($key, $allow_null)){
+                $this->reject_request("Malformed Data: $key", 400);
+            }
+        }
+        
+        return $data;
     }
 }
