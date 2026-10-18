@@ -49,6 +49,7 @@ class vehicle_lookup_database {
     }
     
     private static function createTables(){
+        
         // Session Data
         $sql = "CREATE TABLE IF NOT EXISTS vehicle_sessions (
     id INT AUTO_INCREMENT PRIMARY KEY,
