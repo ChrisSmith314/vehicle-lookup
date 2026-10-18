@@ -47,7 +47,7 @@ class vehicle_lookup_database {
             
             // Handle INSERT< UPDATE AND DELETE queries
             $affectedRows = $command->affected_rows;
-            $insertID = $connection->insert_id;
+            $insertID = $command->insert_id;
             $command->close();
             
             // Return InsertID or Boolean
