@@ -30,7 +30,7 @@ class vehicle_lookup_database {
         return self::$connection;
     }
     
-    public function query($statement, $params = []){
+    public function query($statement, $params = [], $single = false){
         
         // Fetch Query with Params
         if($params){
@@ -40,7 +40,7 @@ class vehicle_lookup_database {
             
             //Handle SELECT queries
             if ($result instanceof mysqli_result) {
-                $data = $result->fetch_all(MYSQLI_ASSOC);
+                $data = $single ? $result->fetch_assoc() : $result->fetch_all(MYSQLI_ASSOC);
                 $command->close();
                 return $data; 
             }
