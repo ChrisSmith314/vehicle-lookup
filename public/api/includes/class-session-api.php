@@ -6,6 +6,7 @@ class vehicle_lookup_rest_api {
     
     public static function init() {
         self::$database = new vehicle_lookup_database();
+        self::$database->getConnection();
         
         self::register_endpoints();
     }
@@ -13,10 +14,10 @@ class vehicle_lookup_rest_api {
     private static function register_endpoints(){
         //List API Endpoints in array and then pass to register_endpoint function
         $endpoints = [
-            'register_session' => [self::get_instance(), 'register_session'],
-            'end_session' => [self::get_instance(), 'end_session'],
-            'get_session' => [self::get_instance(), 'get_session'],
-            'session_lookup' => [self::get_instance(), 'session_lookup'],
+            'register_session' => [self::getInstance(), 'register_session'],
+            'end_session' => [self::getInstance(), 'end_session'],
+            'get_session' => [self::getInstance(), 'get_session'],
+            'session_lookup' => [self::getInstance(), 'session_lookup'],
         ];
         
         foreach($endpoints as $endpoint => $function){
@@ -24,7 +25,7 @@ class vehicle_lookup_rest_api {
         }
     }
     
-    public static function get_instance(){
+    public static function getInstance(){
         if (self::$instance === null) {
             self::$instance = new self();
         }
@@ -60,7 +61,7 @@ class vehicle_lookup_rest_api {
         // Fetch API User from database
         $query = "SELECT * FROM api_keys WHERE api_key = ?";
         
-        $account = self::database->query($query, [$apiKey]);
+        $account = self::$database->query($query, [$apiKey]);
         
         //Verify Credentials
         if($account && isset($account['api_secret'])){
