@@ -37,15 +37,31 @@ class vehicle_lookup_database {
             $command = self::getConnection()->prepare($statement);
             $command->execute($params);
             $result = $command->get_result();
-            $data = $result->fetch_all(MYSQLI_ASSOC);
+            
+            //Handle SELECT queries
+            if ($result instanceof mysqli_result) {
+                $data = $result->fetch_all(MYSQLI_ASSOC);
+                $command->close();
+                return $data; 
+            }
+            
+            // Handle INSERT< UPDATE AND DELETE queries
+            $affectedRows = $command->affected_rows;
+            $insertID = $connection->insert_id;
             $command->close();
             
-            return $data;
+            // Return InsertID or Boolean
+            return $insertID > 0 ? $insertID : ($affectedRows > 0);
         }
         
         // Fetch Standard Query
         $result = self::getConnection()->query($statement);
-        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+        
+        if ($result instanceof mysqli_result) {
+            return $result->fetch_all(MYSQLI_ASSOC);
+        }
+        
+        return $result;
     }
     
     private static function createTables(){
@@ -61,9 +77,9 @@ class vehicle_lookup_database {
     colour VARCHAR(30) DEFAULT NULL,
     
     -- Session Timing (using your exact names)
-    session_start DATETIME NOT NULL,
-    session_end DATETIME DEFAULT NULL, 
-    session_agreed_end DATETIME NOT NULL, 
+    session_start BIGINT NOT NULL,
+    session_agreed_end BIGINT NOT NULL,
+    session_end BIGINT NULL DEFAULT NULL,
     
     -- Session Type (permit, free, paid)
     session_type ENUM('permit', 'free', 'paid') NOT NULL DEFAULT 'paid',
