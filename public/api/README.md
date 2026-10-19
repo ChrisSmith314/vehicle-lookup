@@ -31,7 +31,9 @@ A secure, high-performance, zero-dependency vanilla PHP RESTful API built for ma
 ├── .env                      # Environment configurations (DB credentials)
 ├── composer.json             # Dependency definitions (phpdotenv)
 └── README.md
+```
 
+---
 
 # Parking Management API Reference
 
