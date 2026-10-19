@@ -8,11 +8,6 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="src/global.css" />
 
-    <!-- jQuery & Select2 (Required dependencies) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
     <script src="src/global.js"></script>
 </head>
 
@@ -25,16 +20,13 @@
                 <p class="text-sm text-slate-500">Filter sessions by vehicle details and specific date/time windows.</p>
             </div>
 
-            <form id="sessionSearchForm" action="api/sessions.php" method="GET" class="space-y-6 flex gap-2 justify-center max-md:flex-wrap">
+            <form id="sessionSearchForm" class="space-y-6 flex gap-2 justify-center max-md:flex-wrap" data-api-key="vrm_live_key_414616cf8126">
 
-                <!-- Vehicle Search (Select2 AJAX Dropdown) -->
                 <div class="flex-1 max-md:flex-auto max-md:w-full">
                     <label for="vehicleSelect" class="block text-sm font-semibold text-slate-700 mb-1">
-                        Vehicle Search (VRM, Make, Model, or Colour)
+                        Vehicle Search (VRM)
                     </label>
-                    <select id="vehicleSelect" name="vrm" class="w-full">
-                        <option value="">Type to search vehicle (e.g. AB12 CDE, Ford, Blue)...</option>
-                    </select>
+                    <input id="vehicleSelect" name="vrm" class="w-full" placeholder="Type to search vehicle (e.g. AB12 CDE)...">
                     <p class="text-xs text-slate-400 mt-1">Start typing to perform a live fuzzy lookup against registered vehicles.</p>
                 </div>
 
@@ -66,6 +58,7 @@
                 </div>
 
                 <!-- Submit Button -->
+                <!--
                 <div class="">
                     <label class="block text-sm font-semibold text-slate-700 mb-1">
                         &nbsp;
@@ -74,6 +67,7 @@
                         Search Vehicle Sessions
                     </button>
                 </div>
+-->
             </form>
         </div>
 
@@ -93,104 +87,8 @@
                 </thead>
 
                 <!-- Table Body -->
-                <tbody class="divide-y divide-slate-200 bg-white">
+                <tbody id="vehicleBody" class="divide-y divide-slate-200 bg-white">
 
-                    <!-- Row 1: Active Paid Session -->
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-4 py-3.5 font-bold text-slate-900 whitespace-nowrap">
-                            <span class="px-2 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded font-mono text-xs">
-                                AB12 CDE
-                            </span>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <div class="font-medium text-slate-800">Ford Focus</div>
-                            <div class="text-xs text-slate-400">Silver</div>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                Paid Session
-                            </span>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-slate-600">
-                            2026-10-17 10:00
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-slate-600">
-                            2026-10-17 14:00
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-slate-400 italic">
-                            -- Active --
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Active
-                            </span>
-                        </td>
-                    </tr>
-
-                    <!-- Row 2: Overstay Session -->
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-4 py-3.5 font-bold text-slate-900 whitespace-nowrap">
-                            <span class="px-2 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded font-mono text-xs">
-                                XY55 ZAA
-                            </span>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <div class="font-medium text-slate-800">BMW 3 Series</div>
-                            <div class="text-xs text-slate-400">Black</div>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
-                                Free Session
-                            </span>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-slate-600">
-                            2026-10-17 08:30
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-slate-600">
-                            2026-10-17 10:30
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-slate-600">
-                            2026-10-17 11:45
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                                Overstay
-                            </span>
-                        </td>
-                    </tr>
-
-                    <!-- Row 3: Completed Permit Session -->
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-4 py-3.5 font-bold text-slate-900 whitespace-nowrap">
-                            <span class="px-2 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded font-mono text-xs">
-                                KL68 MNO
-                            </span>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <div class="font-medium text-slate-800">Volkswagen Golf</div>
-                            <div class="text-xs text-slate-400">Blue</div>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-                                Permit
-                            </span>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-slate-600">
-                            2026-10-16 09:00
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-slate-600">
-                            2026-10-16 17:00
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-slate-600">
-                            2026-10-16 16:50
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                                Completed
-                            </span>
-                        </td>
-                    </tr>
 
                 </tbody>
             </table>
