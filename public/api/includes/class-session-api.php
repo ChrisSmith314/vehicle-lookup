@@ -303,14 +303,14 @@ class vehicle_lookup_rest_api {
         
         /** VRM Search */
         if (!empty($_GET['vrm'])) {
-            $is_fuzzy = !empty($_GET['fuzzy']) && $_GET['fuzzy'] === 'true';
+            $is_fuzzy = !empty($_GET['fuzzy']) && $_GET['fuzzy'] == true;
             
             $user_query = strtoupper(str_replace(' ', '', trim($_GET['vrm'])));
             
             
             // Fuzzy Search implementation
             // Triagram Search
-            if($is_fuzzy){
+            if($is_fuzzy && strlen($user_query) > 3){
                 $fuzzy_segments = [];
                 $fuzzy_sql = [];
                 for ($i = 0; $i <= strlen($user_query) - 3; $i++) {
@@ -334,8 +334,8 @@ class vehicle_lookup_rest_api {
                 $sql_query .= " AND ({$fuzzy_query}) >= ?";
                 $sql_params[] = $matched_percentage;
             } else {
-                $sql_query .= " AND vrm = ?";
-                $sql_params[] = $user_query;
+                $sql_query .= " AND vrm LIKE ?";
+                $sql_params[] = '%'.$user_query.'%';
             }
         }
         
