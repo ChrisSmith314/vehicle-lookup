@@ -13,7 +13,6 @@
 
 <body class="container_wrap">
     <section class="container">
-        <h1>Vehicle Lookup</h1>
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <div class="mb-6 border-b border-slate-100 pb-4">
                 <h2 class="text-xl font-bold text-slate-800">Query Vehicle Sessions</h2>
