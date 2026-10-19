@@ -4,15 +4,17 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "watch:css": "tailwindcss -i ./assets/css/global.css -o ./src/global.css --watch",
-        "watch:js": "esbuild assets/scripts/index.ts --bundle --outfile=src/global.js --watch",
+        "watch:css": "tailwindcss -i ./public/assets/css/global.css -o ./public/src/global.css --watch",
+        "watch:js": "esbuild ./public/assets/scripts/index.ts --bundle --outfile=./public/src/global.js --watch",
         "dev": "concurrently npm:watch:css npm:watch:js",
-        "build": "tailwindcss -i ./assets/css/global.css -o ./src/global.css --minify && esbuild assets/scripts/index.ts --bundle --outfile=src/global.js --minify"
+        "build": "tailwindcss -i ./public/assets/css/global.css -o ./public/src/global.css --minify && esbuild ./public/assets/scripts/index.ts --bundle --outfile=./public/src/global.js --minify"
     },
     "dependencies": {
         "@tailwindcss/cli": "^4.3.3",
+        "@types/mustache": "^4.2.6",
         "concurrently": "^10.0.6",
         "esbuild": "^0.28.2",
+        "mustache": "^4.2.0",
         "tailwindcss": "^4.3.3"
     }
 }
