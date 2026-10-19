@@ -23,10 +23,10 @@ A secure, high-performance, zero-dependency vanilla PHP RESTful API built for ma
 ```text
 ├── api/
 │   ├── .htaccess             # Rewrites requests to the entry point
-│   ├── index.php             # Bootstrap, CORS headers, environment loading[cite: 2]
+│   ├── index.php             # Bootstrap, CORS headers, environment loading
 │   └── includes/
 │       ├── class-database.php    # MySQLi wrapper & auto-migration setup
-│       ├── class-endpoint.php    # Custom micro-router & dispatcher[cite: 5]
+│       ├── class-endpoint.php    # Custom micro-router & dispatcher
 │       └── class-session-api.php # Core REST endpoints & business logic
 ├── .env                      # Environment configurations (DB credentials)
 ├── composer.json             # Dependency definitions (phpdotenv)
@@ -59,7 +59,7 @@ Creates a new parking session record, validates payload data, and automatically 
 
 * **HTTP Method:** `POST`
 * **Endpoint:** `/api/register_session`
-* **Content-Type:** `application/x-www-form-urlencoded`
+* **Response Content-Type:** `application/json`
 
 #### Request Parameters
 
@@ -88,7 +88,7 @@ Concludes an active parking session by recording the actual departure time and u
 
 * **HTTP Method:** `POST`
 * **Endpoint:** `/api/end_session`
-* **Content-Type:** `application/x-www-form-urlencoded`
+* **Response Content-Type:** `application/json`
 
 #### Request Parameters
 
@@ -110,6 +110,7 @@ Fetches all details for a single specific parking session by its unique database
 
 * **HTTP Method:** `GET`
 * **Endpoint:** `/api/get_session`
+* **Response Content-Type:** `application/json`
 
 #### Query Parameters
 
@@ -128,6 +129,7 @@ Advanced search endpoint designed for monitoring dashboards. Supports strict or 
 
 * **HTTP Method:** `GET`
 * **Endpoint:** `/api/session_lookup`
+* **Response Content-Type:** `application/json`
 
 #### Query Parameters
 
