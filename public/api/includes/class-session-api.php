@@ -115,7 +115,7 @@ class vehicle_lookup_rest_api {
         (vrm, make, model, colour, session_start, session_end, session_agreed_end, session_type, session_status, location_code) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $query_params = [
-            'vrm' => strtoupper($_POST['vrm']),
+            'vrm' => strtoupper(preg_replace('/\s+/', ' ',trim($_GET['vrm']))), // TODO: Implement a clean_vrm column without the space
             'make'=> $_POST['make'],
             'model'=> $_POST['model'],
             'colour' => $_POST['colour'],
@@ -305,7 +305,8 @@ class vehicle_lookup_rest_api {
         if (!empty($_GET['vrm'])) {
             $is_fuzzy = !empty($_GET['fuzzy']) && $_GET['fuzzy'] == true;
             
-            $user_query = strtoupper(str_replace(' ', '', trim($_GET['vrm'])));
+//            $user_query = strtoupper(str_replace(' ', '', trim($_GET['vrm'])));
+            $user_query = strtoupper(preg_replace('/\s+/', ' ',trim($_GET['vrm']))); // Keep space for result accuracy 
             
             
             // Fuzzy Search implementation
@@ -324,7 +325,7 @@ class vehicle_lookup_rest_api {
                 $fuzzy_query = implode(' + ', $fuzzy_sql);
                 
                 // Return results based on percentage comparison - less characters = greater threshold
-                if (strlen($user_query) <= 5) {
+                if (strlen($user_query) <= 8) {
                     $required_percent = 0.33; 
                 } else {
                     $required_percent = 0.65; 
